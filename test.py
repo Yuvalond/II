@@ -1,24 +1,9 @@
-import math
-import time
+# Начнем с импорта необходимых пакетов 
+import matplotlib.pyplot as plt 
+import seaborn as sns; sns.set() 
+import numpy as np
+from sklearn.cluster import KMeans
 
-# Define the symbols for the heart shape
-symbols = ["♥", "❤", "💗", "💕"]
-
-# Define the parameters for the spinning hearts
-radius = 10
-angular_speed = 0.1
-
-# Clear the screen
-def clear_screen():
-    print('\033c')
-
-# Main loop for spinning hearts
-while True:
-    clear_screen()
-    for i in range(360):
-        angle = math.radians(i)
-        x = int(radius * math.cos(angle))
-        y = int(radius * math.sin(angle))
-        heart_symbol = symbols[i % len(symbols)]
-        print(" " * (radius + y) + heart_symbol)
-        time.sleep(0.01)
+from sklearn.datasets import load_digits 
+digits = load_digits() 
+digits.data.shape
