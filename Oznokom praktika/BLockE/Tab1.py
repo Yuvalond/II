@@ -19,12 +19,14 @@ class Tab1(Window):
 
         #список валюты верх
         self.spisok_valut1 = ttk.Combobox(self.tab)
+        self.spisok_valut1.config(width=45)
         self.spisok_valut1["values"] = self.get_list_with_currency() #список валют
         self.spisok_valut1.current(0)
         self.spisok_valut1.grid(column=0, row=0 , padx=10,pady=10)
 
         #список валюты низ
         self.spisok_valut2 = ttk.Combobox(self.tab)
+        self.spisok_valut2.config(width=45)
         self.spisok_valut2["values"] = self.get_list_with_currency() # сюда надо залить список из валют
         self.spisok_valut2.current(1)
         self.spisok_valut2.grid(column=0, row=1 , padx=10,pady=10)
@@ -120,6 +122,8 @@ class Tab1(Window):
             name = valute.find('Name').text
             if name == self:
                 value_str = valute.find('Value').text.replace(',', '.')
-                return float(value_str)
+                nominal_str = valute.find('Nominal').text.replace(',','.')
+                #print (f"{value_str} {nominal_str}")
+                return float(value_str)/float(nominal_str)
         # если валюта не найдена, возвращаем None
         return "Такой валюты не существует"
