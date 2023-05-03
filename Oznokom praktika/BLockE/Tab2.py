@@ -17,101 +17,78 @@ class Tab2(Tab1, Window):
     def __init__(self):
         super().__init__()
         self.tab2 = ttk.Frame(self.tab_control)
-        self.tab_control.add(self.tab2, text = "Динамика курса")
+        self.tab_control.add(self.tab2, text="Динамика курса")
 
-        #label Валюта
+        # label Валюта
         currency_label = ttk.Label(self.tab2, text="Валюта")
         currency_label.grid(column=0, row=0, padx=10, pady=10)
 
-        #Выбор самой валюты список
-        self.currency_list = ttk.Combobox(self.tab2, values=self.get_list_with_currency())
-        self.currency_list.config(width=45)
-        self.currency_list.grid(column=0, row=1, padx=10, pady=10)
+        # Выбор самой валюты список
+        self.currency_list = ttk.Combobox(self.tab2, values=self.get_list_with_currency(), width=45)
         self.currency_list.current(0)
+        self.currency_list.grid(column=0, row=1, padx=10, pady=10)
 
-        #Кнопка построить график
-        build_button = ttk.Button(self.tab2, text="Построить график" , command = self.build_button_command)
+        # Кнопка построить график
+        build_button = ttk.Button(self.tab2, text="Построить график", command=self.build_button_command)
         build_button.grid(column=0, row=4, padx=10, pady=10)
 
-
-        #label Период
+        # label Период
         period_label = ttk.Label(self.tab2, text="Период")
         period_label.grid(column=1, row=0, padx=10, pady=10)
 
-        #Radiobutton Неделя, Месяц, Квартал, Год 
-        #значение      (0)    (1)    (2)     (4)
-        period_var = IntVar()
-        period_var.set(0)
-
-
-        radiobutton_week = ttk.Radiobutton(self.tab2, text="Неделя" , variable = period_var , value = 0, command = self.show_list_week)
-        radiobutton_week.grab_current()
-        radiobutton_week.grid(column=1, row=1, padx=10, pady=10)
-
-        self.show_list_week()
-
-        radiobutton_month = ttk.Radiobutton(self.tab2, text="Месяц", variable = period_var, value = 1, command=self.show_list_month)
-        radiobutton_month.grid(column=1, row=2, padx=10, pady=10)
-
-        radiobutton_quarter = ttk.Radiobutton(self.tab2, text="Квартал", variable = period_var, value = 2, command=self.show_list_quarter)
-        radiobutton_quarter.grid(column=1, row=3, padx=10, pady=10)
-
-        radiobutton_year = ttk.Radiobutton(self.tab2, text="Год", variable = period_var, value = 3, command=self.show_list_year)
-        radiobutton_year.grid(column=1, row=4, padx=10, pady=10)
-
+        # Radiobutton Неделя, Месяц, Квартал, Год
+        period_var = IntVar(value=0)
         self.period_var = period_var
 
+        radiobutton_week = ttk.Radiobutton(self.tab2, text="Неделя", variable=period_var, value=0, command=self.show_list_week)
+        radiobutton_week.grab_current()
+        radiobutton_week.grid(column=1, row=1, padx=10, pady=10)
+        self.show_list_week()
 
-        #label Выбор периода
+        radiobutton_month = ttk.Radiobutton(self.tab2, text="Месяц", variable=period_var, value=1, command=self.show_list_month)
+        radiobutton_month.grid(column=1, row=2, padx=10, pady=10)
+
+        radiobutton_quarter = ttk.Radiobutton(self.tab2, text="Квартал", variable=period_var, value=2, command=self.show_list_quarter)
+        radiobutton_quarter.grid(column=1, row=3, padx=10, pady=10)
+
+        radiobutton_year = ttk.Radiobutton(self.tab2, text="Год", variable=period_var, value=3, command=self.show_list_year)
+        radiobutton_year.grid(column=1, row=4, padx=10, pady=10)
+
+        # label Выбор периода
         period_label = ttk.Label(self.tab2, text="Выбор периода")
         period_label.grid(column=2, row=0, padx=10, pady=10)
 
-        ###ЗАПУСК###
-
-        self.tab_control.pack(expand = True, fill = BOTH)
-
-        self.window.mainloop()#запуск
+        # ЗАПУСК
+        self.tab_control.pack(expand=True, fill=BOTH)
+        self.window.mainloop()  # запуск
     
 
     #Работа кнопки построения графика
     def build_button_command(self):
-                if self.handle_button_click() == 0:
-                    value = (self.list_week.get())
-                    list_value = self.get_date_range_for_week(value) # X
-                    currency_name = self.currency_list.get()
-                    list_value2 = [] #Y
-                    for date in list_value:
-                        list_value2.append(self.get_currency_for_date_and_name(date,currency_name))
-                    self.graph(list_value,list_value2)
+        value = None
+        list_value = None
+        handle_click = self.handle_button_click()
+        if handle_click == 0:
+            value = self.list_week.get()
+            list_value = self.get_date_range_for_week(value)
+        elif handle_click == 1:
+            value = self.list_month.get()
+            list_value = self.get_date_range_for_month(value)
+        elif handle_click == 2:
+            value = self.list_period.get()
+            list_value = self.get_mondays_of_quarter(value)
+        elif handle_click == 3:
+            value = self.list_year.get()
+            list_value = self.get_first_days_of_months(value)
+        else:
+            return None
 
-                elif self.handle_button_click() == 1:
-                    value = (self.list_month.get())
-                    list_value = self.get_date_range_for_month(value) #X
-                    currency_name = self.currency_list.get()
-                    list_value2 = [] #Y
-                    for date in list_value:
-                        list_value2.append(self.get_currency_for_date_and_name(date,currency_name))
-                    self.graph(list_value,list_value2)
+        if list_value is None:
+            return None
 
-                elif self.handle_button_click() == 2:
-                    value = (self.list_period.get())
-                    list_value = self.get_mondays_of_quarter(value) #X
-                    currency_name = self.currency_list.get()
-                    list_value2 = [] #Y
-                    for date in list_value:
-                        list_value2.append(self.get_currency_for_date_and_name(date,currency_name))
-                    self.graph(list_value,list_value2)
-
-                elif self.handle_button_click() == 3:
-                    value = self.list_year.get()
-                    list_value = self.get_first_days_of_months(value) #X
-                    currency_name = self.currency_list.get() 
-                    list_value2 = [] #Y
-                    for date in list_value:
-                        list_value2.append(self.get_currency_for_date_and_name(date,currency_name))
-                    self.graph(list_value,list_value2)
-                else:
-                    return NONE
+        currency_name = self.currency_list.get()
+        list_value2 = [self.get_currency_for_date_and_name(date, currency_name) for date in list_value]
+        self.graph(list_value, list_value2)
                          
     def handle_button_click(self):
         selected_value = self.period_var.get()
@@ -142,24 +119,17 @@ class Tab2(Tab1, Window):
         return dates
     
     @staticmethod
-    def get_currency_for_date_and_name(date,currency_name):
-        #date = "06/01/2023" #самая первая рабочая дата 06/01/1993
-        # формируем URL для запроса
-        url = f"http://www.cbr.ru/scripts/XML_daily.asp?date_req={date}"
-        # отправляем GET-запрос
-        response = urllib.request.urlopen(url)
-        # парсим XML-документ
-        tree = ET.parse(response)
-        # получаем корневой элемент дерева
+    def get_currency_for_date_and_name(date, currency_name):
+        url = "http://www.cbr.ru/scripts/XML_daily.asp?date_req={}".format(date)
+        with urllib.request.urlopen(url) as response:
+            tree = ET.parse(response)
         root = tree.getroot()
-        # итерируемся по всем элементам <Valute> и ищем нужную валюту
         for valute in root.iter('Valute'):
             name = valute.find('Name').text
             if name == currency_name:
                 value_str = valute.find('Value').text.replace(',', '.')
-                nominal_str = valute.find('Nominal').text.replace(',','.')
-                #print (f"{value_str} {nominal_str}")
-                return float(value_str)/float(nominal_str)
+                nominal_str = valute.find('Nominal').text.replace(',', '.')
+                return float(value_str) / float(nominal_str)
         return None
 
 

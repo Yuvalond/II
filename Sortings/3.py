@@ -1,67 +1,41 @@
 import random
-import time
+import timeit
 
-# Функция для сортировки массива методом слияния
-def merge_sort(arr):
-    global srav_count, peremesh_count  # Глобальные переменные для подсчета операций сравнения и перемещения
-
-    srav_count += 1  # Увеличение счетчика операций сравнения
-    if len(arr) <= 1:  # Если массив состоит из одного элемента или меньше, он уже отсортирован
-        return arr
+def merge_sort(arr, srav_count=0, peremesh_count=0):
+    if len(arr) <= 1:
+        return arr, srav_count, peremesh_count
     
-    mid = len(arr) // 2  # Вычисление середины массива
-    left = arr[:mid]  # Создание левого подмассива
-    right = arr[mid:]  # Создание правого подмассива
+    mid = len(arr) // 2
+    left, srav_count, peremesh_count = merge_sort(arr[:mid], srav_count, peremesh_count)
+    right, srav_count, peremesh_count = merge_sort(arr[mid:], srav_count, peremesh_count)
     
-    left = merge_sort(left)  # Рекурсивный вызов функции merge_sort для левого подмассива
-    right = merge_sort(right)  # Рекурсивный вызов функции merge_sort для правого подмассива
+    result = []
+    i = j = 0
     
-    result = []  # Итоговый массив, в который будут сливаться отсортированные левый и правый подмассивы
-    i = 0  # Индекс текущего элемента левого подмассива
-    j = 0  # Индекс текущего элемента правого подмассива
-    while i < len(left) and j < len(right):  # Пока не достигнут конец хотя бы одного из подмассивов
-        srav_count += 1  # Увеличение счетчика операций сравнения
-        if left[i] <= right[j]:  # Если текущий элемент левого подмассива меньше или равен текущему элементу правого подмассива
-            result.append(left[i])  # Добавление текущего элемента левого подмассива в итоговый массив
-            i += 1  # Увеличение индекса текущего элемента левого подмассива
-        else:  # Иначе (текущий элемент правого подмассива меньше текущего элемента левого подмассива)
-            result.append(right[j])  # Добавление текущего элемента правого подмассива в итоговый массив
-            j += 1  # Увеличение индекса текущего элемента правого под1массива
-        peremesh_count += 1  # Увеличение счетчика операций перемещения
+    while i < len(left) and j < len(right):
+        srav_count += 1
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+        peremesh_count += 1
         
-    result += left[i:]  # Добавление оставшихся элементов левого подмассива в итоговый массив
-    result += right[j:]  # Добавление оставшихся элементов правого подмассива в итоговый массив
+    result += left[i:]
+    result += right[j:]
     
-    return result  # Возврат отсортированного итогового массива
+    return result, srav_count, peremesh_count
 
-# Ввод количества элементов массива
 n = int(input("Введите количество элементов в массиве: "))
+A = random.sample(range(1, 1000), k=n)
 
-# Генерация массива случайных чисел
-A = [random.randint(1, 1000) for i in range(n)]
-
-# Вывод исходного массива
 print("Исходный массив: ", A)
 
-# Обнуление счетчиков
-srav_count = 0
-peremesh_count = 0
+A, srav_count, peremesh_count = merge_sort(A)
 
-# Измерение времени выполнения сортировки
-start_time = time.time()
-
-# Сортировка массива методом слияния
-A = merge_sort(A)
-
-# Измерение времени выполнения сортировки
-end_time = time.time()
-
-# Вывод отсортированного массива
 print("Отсортированный массив: ", A)
-
-# Вывод количества операций сравнения и перемещения
 print("Количество операций сравнения: ", srav_count)
 print("Количество операций перемещения: ", peremesh_count)
 
-# Вывод времени выполнения сортировки
-print("Время выполнения сортировки: ", end_time - start_time, "секунд")
+print("Время выполнения сортировки: ", timeit.timeit(lambda: merge_sort(A), number=1), "секунд")

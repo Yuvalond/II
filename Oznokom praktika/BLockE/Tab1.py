@@ -8,7 +8,6 @@ import xml.dom.minidom
 
 import xml.etree.ElementTree as ET
 
-import datetime
 import re
 
 class Tab1(Window):            
@@ -78,52 +77,54 @@ class Tab1(Window):
 
     # ФОРМУЛА НАХОЖДЕНИЯ 1 ВАЛЮТЫ ОТ ДРУГОЙ ПО ОТНОШЕНИЮ К РУБЛЮ
     @staticmethod
-    def formula_currency(value1, value2,self):
+    def formula_currency(value1, value2, self):
         value3 = self.vvod_valut.get()
-        if value3 == '':
-             return "Введите значение"
+        if not value3:
+            return "Введите значение"
         else:
-            result = value1*float(value3)/value2 
+            result = value1 * float(value3) / value2 
             return result 
         
-    #ПОЛУЧЕНИЕ ЛИСТА С СТРАНАМИ НА СЕГОДНЯШНИЙ ДЕНЬ    
-    @staticmethod   
+    #ПОЛУЧЕНИЕ ЛИСТА С СТРАНАМИ НА СЕГОДНЯШНИЙ ДЕНЬ     
+    @staticmethod
     def get_list_with_currency():
-            #date = "06/01/2023" #самая первая рабочая дата 06/01/1993
-            now = datetime.datetime.now()
-            date_str = now.strftime("%d/%m/%Y")
-            url = f"http://www.cbr.ru/scripts/XML_daily.asp?date_req={date_str}"
-            response = urllib.request.urlopen(url)
-            dom = xml.dom.minidom.parse(response) #получение DOM (файл как дерево тегов) структуры файла
-            dom.normalize()
-            nodeArray = dom.getElementsByTagName("Valute")  #получение элементов с этим тегом
-            result_list = []
-            for node in nodeArray:
-                name = node.getElementsByTagName("Name")[0].childNodes[0].nodeValue
-                result_list += [name]
-            return result_list
-    
-    #ПО НАЗВАНИЮ ВАЛЮТЫ ВОЗВРАЩАЕМ ЕЕ ЗНАЧЕНИЕ
-    def get_currency_val(currency_name, self) :
-        # получаем текущую дату
-        currency_name = str(currency_name)
-        now = datetime.datetime.now()
-        date_str = now.strftime("%d/%m/%Y")
-        # формируем URL для запроса
-        url = f"http://www.cbr.ru/scripts/XML_daily.asp?date_req={date_str}"
-        # отправляем GET-запрос
+        url = "http://www.cbr.ru/scripts/XML_daily.asp"
         response = urllib.request.urlopen(url)
-        # парсим XML-документ
-        tree = ET.parse(response)
-        # получаем корневой элемент дерева
-        root = tree.getroot()
-        # итерируемся по всем элементам <Valute> и ищем нужную валюту
-        for valute in root.iter('Valute'):
-            name = valute.find('Name').text
-            if name == self:
-                value_str = valute.find('Value').text.replace(',', '.')
-                nominal_str = valute.find('Nominal').text.replace(',','.')
-                #print (f"{value_str} {nominal_str}")
-                return float(value_str)/float(nominal_str)
-        # если валюта не найдена, возвращаем None
-        return "Такой валюты не существует"
+        dom = xml.dom.minidom.parseString(response.read())
+        nodeArray = dom.getElementsByTagName("Valute")
+        result_list = [node.getElementsByTagName("Name")[0].childNodes[0].nodeValue for node in nodeArray]
+        return result_list
+        
+    #ПО НАЗВАНИЮ ВАЛЮТЫ ВОЗВРАЩАЕМ ЕЕ ЗНАЧЕНИЕ
+    
+    @staticmethod
+    def get_currency_val(currency_name):
+        try:
+            url = f"https://www.cbr.ru/scripts/XML_daily.asp"
+            with urllib.request.urlopen(url) as response:
+                xml_data = response.read()
+            root = ET.fromstring(xml_data)
+
+            currency_element = None
+            for elem in root.findall(".//Valute"):
+                name_elem = elem.find("Name")
+                if name_elem is not None and currency_name in name_elem.text:
+                    currency_element = elem
+                    break
+
+            if currency_element is None:
+                return None
+
+            value_elem = currency_element.find("Value")
+            nominal_elem = currency_element.find("Nominal")
+
+            if value_elem is None or nominal_elem is None:
+                return None
+
+            value = float(value_elem.text.replace(",", "."))
+            nominal = float(nominal_elem.text)
+
+            return value / nominal
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
