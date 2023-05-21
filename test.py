@@ -1,27 +1,13 @@
-from datetime import datetime, timedelta
+import re
 
-def get_mondays_of_quarter(quarter):
-    year = int(quarter.split()[-1])
-    quarter_num = int(quarter.split()[0])
-    if quarter_num == 1:
-        start_date = datetime(year, 1, 1)
-    elif quarter_num == 2:
-        start_date = datetime(year, 4, 1)
-    elif quarter_num == 3:
-        start_date = datetime(year, 7, 1)
-    elif quarter_num == 4:
-        start_date = datetime(year, 10, 1)
+def validate_float(input_string):
+    pattern = "^[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?$"
+    if re.match(pattern, input_string) or re.match("^[-+]?(\d+[eE][-+]?\d+)$", input_string):
+        return f"{input_string} is legal."
     else:
-        return []
-    end_date = start_date + timedelta(days=91)
-    monday_dates = []
-    while start_date <= end_date:
-        if start_date.weekday() == 0: # если это понедельник
-            monday_dates.append(start_date.strftime('%d/%m/%Y'))
-        start_date += timedelta(days=1)
-    return monday_dates
+        return f"{input_string} is illegal."
 
-
-
-print(get_mondays_of_quarter("2 квартал 2022"))
-
+# пример использования
+inputs = ["1.2", "1", "1e-55", "e-12", "6.5E", "1e-12", "+4.1234567890E-99999", "7.6e+12.5", "99"]
+for input_string in inputs:
+    print(validate_float(input_string))

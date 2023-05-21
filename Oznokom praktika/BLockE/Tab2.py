@@ -25,6 +25,7 @@ class Tab2(Tab1, Window):
 
         # Выбор самой валюты список
         self.currency_list = ttk.Combobox(self.tab2, values=self.get_list_with_currency(), width=45)
+        self.currency_list.state(['readonly'])
         self.currency_list.current(0)
         self.currency_list.grid(column=0, row=1, padx=10, pady=10)
 
@@ -138,6 +139,7 @@ class Tab2(Tab1, Window):
     def show_list_week(self):
         self.hide_list()
         self.list_week = ttk.Combobox(self.tab2, values = self.get_weekly_dates())
+        self.list_week.state(['readonly'])
         self.list_week.config(width=20)
         self.list_week.grid(column=2, row=1,  padx=10, pady=10)
         self.list_week.current(0)
@@ -161,6 +163,7 @@ class Tab2(Tab1, Window):
     def show_list_month(self):
         self.hide_list()
         self.list_month = ttk.Combobox(self.tab2, value = self.get_monthly_dates())
+        self.list_month.state(['readonly'])
         self.list_month.grid(column=2, row=2,  padx=10, pady=10)
         self.list_month.current(0)
     
@@ -177,6 +180,7 @@ class Tab2(Tab1, Window):
     def show_list_quarter(self):
         self.hide_list()
         self.list_period = ttk.Combobox(self.tab2, values = self.get_quarter_dates())
+        self.list_period.state(['readonly'])
         self.list_period.grid(column=2, row=3,  padx=10, pady=10)
         self.list_period.current(0)
 
@@ -214,6 +218,7 @@ class Tab2(Tab1, Window):
     def show_list_year(self):
         self.hide_list()
         self.list_year = ttk.Combobox(self.tab2, values = self.get_years_list())
+        self.list_year.state(['readonly'])
         self.list_year.grid(column=2, row=4,padx=10, pady=10)
         self.list_year.current(0)
 

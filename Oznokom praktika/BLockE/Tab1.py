@@ -19,12 +19,14 @@ class Tab1(Window):
         #список валюты верх
         self.spisok_valut1 = ttk.Combobox(self.tab)
         self.spisok_valut1.config(width=45)
+        self.spisok_valut1.state(['readonly'])
         self.spisok_valut1["values"] = self.get_list_with_currency() #список валют
         self.spisok_valut1.current(0)
         self.spisok_valut1.grid(column=0, row=0 , padx=10,pady=10)
 
         #список валюты низ
         self.spisok_valut2 = ttk.Combobox(self.tab)
+        self.spisok_valut2.state(['readonly'])
         self.spisok_valut2.config(width=45)
         self.spisok_valut2["values"] = self.get_list_with_currency() # сюда надо залить список из валют
         self.spisok_valut2.current(1)
@@ -67,11 +69,19 @@ class Tab1(Window):
         # #вернуть в label_valut
         self.change_label_valut(result,self)
         
+    def blink(self,label , count):
+        if count % 2 == 0:
+            label.config(fg="black")
+        else:
+            label.config(fg="red")
+        if count>0:
+            label.after(500, self.blink, label , count-1)
 
     @staticmethod
     def change_label_valut(result,self):
         if isinstance(result, str):
             self.label_valut["text"] = f"{result}"
+            self.blink(self.label_valut, 7)
         elif isinstance(result, int) or isinstance(result, float):
             self.label_valut["text"] = f"{result:.3f}"
 

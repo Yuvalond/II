@@ -41,4 +41,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['C:\\Users\\gaome\\OneDrive\\Рабочий стол\\Учеба\\GIT\\II\\II\\Oznokom praktika\\BLockE\\icon.ico'],
 )
