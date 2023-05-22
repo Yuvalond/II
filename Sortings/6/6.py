@@ -1,16 +1,15 @@
 # поиска первого вхождения заданной строки P длиной m символов в тексте S, 
 # размером n символов, используя алгоритм ПРЯМОГО ПОИСКА СТРОКИ
+
 # сложность O(длина текста * длина подстроки)
 
-#посимвольное сравнение O(len_text*len_substring)
+# посимвольное сравнение O(len_text*len_substring)
 # сдвиги O(len_text)
 
 def find_substring(text: str, substring: str):
 
     len_text, len_substring = len(text), len(substring) #размер строки и подстроки  
     cmp_count, shift_count = 0, 0                       #посимвольное сравнение и сдвиг подстроки
-
-    print (f"Количество символов в тексте(с пробелами):{len(text)}")
 
     for i in range(len_text): # цикл по всем символам текста 
 
@@ -38,12 +37,11 @@ def find_substring(text: str, substring: str):
 # 100,500,1000,2000,5000
 # слова для проверки по 6 символов
 # сестры, рукава, слышно , именно, свежий
-
 choice = int(input("Введите номер файла(1,2,3,4 или 5) :"))
-
-with open(f'II\\Sortings\\6\\file{choice}.txt', "r", encoding="utf-8") as f:
+with open(f"II\\Sortings\\6\\file{choice}.txt", "r", encoding="utf-8") as f:
     text = f.read()
     print(text[:500])
+    print (f"Количество символов в тексте(с пробелами):{len(text)}")
     pattern = str(input("Введите текст: "))
     index = find_substring(text, pattern)
     if index != -1:
