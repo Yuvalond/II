@@ -4,6 +4,7 @@ import locale
 import requests
 import openpyxl
 import os
+import re
 from bs4 import BeautifulSoup
 
 class Raspisanie():
@@ -13,6 +14,18 @@ class Raspisanie():
         self.course = self.get_current_course()                     #Курс
         self.date = datetime.datetime.today().strftime("%d.%m.%Y")  #Текущая дата , где находимся
         self.path = self.get_xlsx_from_mirea()                      #Путь к файлу для текущего курса
+
+    def set_group(self, new_group:str):
+        self.group = new_group
+
+    def set_cours(self, new_cours:str):
+        self.course = new_cours
+         
+    def set_date(self, new_date:str):
+        self.date = new_date
+
+    def set_path(self, new_path:str):
+        self.date = new_path 
 
     #на каком курсе сейчас человек
     def get_current_course(self):
@@ -45,18 +58,20 @@ class Raspisanie():
                             continue
                     name_link = "IIT" + link.split("IIT")[-1]               #получения названия файла 
                     num_course = int(name_link.split("_")[1].split("-")[0]) #получение названия курса данного файла
-                    if self.course == num_course:
-                        path = f"II/Oznokom praktika/BlockF/XLSX_files/{name_link}"
-                        with open (path , "wb") as f:
-                                resp = requests.get(link)
-                                f.write(resp.content)
-                        self.path = path
+                    pattern = r"^[\w-]+\_\d{2}\.\d{2}\.\d{4}\.xlsx$"
+                    if re.match(pattern,name_link):  
+                        if self.course == num_course:
+                            path = f"II/Oznokom praktika/BlockF/XLSX_files/{name_link}"
+                            with open (path , "wb") as f:
+                                    resp = requests.get(link)
+                                    f.write(resp.content)
+                            return path
 
 
 
     #получение из файла даты обучения
     def get_diaposon_learning_date(self):
-        book = openpyxl.load_workbook(self.path,data_only=True)
+        book = openpyxl.load_workbook(self.path, read_only=True)
         sheet =  book.active
         cell = sheet.cell(row=1, column=1)
         start_str = cell.value.split('с ')[1].split(' по ')[0] #начало обучения
@@ -64,18 +79,18 @@ class Raspisanie():
         return start_str,end_str
 
     #получаем день недели str
-    def get_day_of_week(date_string):
-        date_object = datetime.datetime.strptime(date_string, '%d.%m.%Y')
+    def get_day_of_week(self):
+        date_object = datetime.datetime.strptime(self.date, '%d.%m.%Y')
         locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
         day_of_week = date_object.strftime('%A')
         return day_of_week
 
     #четная неделя или нет + там есть порядковый номер недели
-    def is_even_week(date_str,self):
-        first_date, second_date = self.get_diaposon_learning_date()
+    def is_even_week(self):
+        first_date, second_date = self.get_diaposon_learning_date()             #здесь дед инсайд
         start_date = datetime.datetime.strptime(first_date, '%d.%m.%Y').date()
         end_date = datetime.datetime.strptime(second_date, '%d.%m.%Y').date()
-        date_object = datetime.datetime.strptime(date_str, '%d.%m.%Y').date()
+        date_object = datetime.datetime.strptime(self.date, '%d.%m.%Y').date()
         if date_object < start_date or date_object > end_date:
             return "Мы не учимся брат"
         start_week_day = start_date.isoweekday()
@@ -88,19 +103,18 @@ class Raspisanie():
 
     #получение ячейки группы в файле 
     def find_group_in_file(self):
-        book = openpyxl.load_workbook(self.path, data_only=True) # path
+        book = openpyxl.load_workbook(self.path, read_only=True) # path                         #####проблема#####
         sheet = book.active     #активный лист
         row = sheet[2] 
         
         for cell in row:
-            result = (cell) 
+            result = cell
             if cell.value == self.group:
-                result = (cell) 
-                return result
+                return cell
         return None
 
     #Вывод в родительном падеже
-    def get_month_name_genitive(date):
+    def get_month_name_genitive(self):
         month_names_genitive = [
             "января",
             "февраля",
@@ -116,20 +130,20 @@ class Raspisanie():
             "декабря"
         ]
 
-        date = datetime.datetime.strptime(date, '%d.%m.%Y')
+        date = datetime.datetime.strptime(self.date, '%d.%m.%Y')
         month_number = date.month - 1
 
         return f'{date.day} {month_names_genitive[month_number]}' 
 
     #получение листа с расписанем на день расписания 
-    def get_raspisanie(cell, self): #ячейка, путь к файлу xml, дата
+    def get_raspisanie(self, cell): # путь к файлу xml, ячейка, дата
         locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
-        book = openpyxl.load_workbook(self.path, read_only=True)
+        book = openpyxl.load_workbook(self.path)
         sheet =  book.active
         base_row = cell.row
         base_column = cell.column
-        uneven = self.is_even_week(self.date,self.path)
-        day_of_the_week = self.get_day_of_week(self.date)
+        uneven = self.is_even_week()
+        day_of_the_week = self.get_day_of_week()
         #определение начального положения положения клетки(зависит от дня) 
         days_of_week = {
             "понедельник": 0,
@@ -141,7 +155,7 @@ class Raspisanie():
             "воскресенье": 6
         }
         #вывод расписания для этого дня
-        formatted_date = self.get_month_name_genitive(self.date)
+        formatted_date = self.get_month_name_genitive()
         date_for_list = f"Расписание на {formatted_date}:"
         value = days_of_week[day_of_the_week]
         if value == 6:
@@ -167,11 +181,15 @@ class Raspisanie():
     def get_raspisanie_moment(self):
         cell = self.find_group_in_file()
         if cell is not None:
-            return self.get_raspisanie(cell)
+            result = self.get_raspisanie(cell)
+            return result
         else:
             return f"Группа {self.group} не найдена в файле"
         
 #ИВБО-09-22
 
-group1 = Raspisanie("ИКБО-29-22")
+group1 = Raspisanie("ИВБО-09-21")
+print(group1.path)
 print(group1.get_raspisanie_moment())
+
+#MISSION COMPLITE расписание получается! ( а потом сука надо как то его в джейсон засунуть и вытаскивать проверяя айди пользователя, теость запомнить выбор мужчины)
