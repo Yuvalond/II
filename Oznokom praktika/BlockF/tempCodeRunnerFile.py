@@ -1,1 +1,2 @@
-book.active
+global vk
+    global longpoll
