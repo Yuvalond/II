@@ -1,2 +1,0 @@
-global vk
-    global longpoll

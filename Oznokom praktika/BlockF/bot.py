@@ -1,9 +1,14 @@
 import vk_api
-from ParsingRaspisania import *
+from Parsing_raspisania import *
+from Parsing_weather import *
+from Parsing_teacher import *
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.utils import get_random_id
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+from vk_api import VkUpload
+from PIL import Image
 #api-key = vk1.a.t9U8dwwX7L2XFyqrz6Iwq8bRIW8BQsOodLpd5DGVqDmrEpLylPEGfdFp8VGdjYjw_XdSkjTo1QdIg3fG6kMTaWo7aQMjXN9WOCoEitzvlm_pL2pJ4fji81xUvg6Q_dsIO8CObCySsBmUKoOF9_h9u_ULUFQHdYEbboV1dyL9TwVzy296wNfUEmRd3VcNej5CyC41Hye6HFQ1TNFk1eMe2Q
+import xml.etree.ElementTree as ET
 
 #ОБРАЩЕНИЕ К LONGPOLL
 vk_session = vk_api.VkApi(token='vk1.a.t9U8dwwX7L2XFyqrz6Iwq8bRIW8BQsOodLpd5DGVqDmrEpLylPEGfdFp8VGdjYjw_XdSkjTo1QdIg3fG6kMTaWo7aQMjXN9WOCoEitzvlm_pL2pJ4fji81xUvg6Q_dsIO8CObCySsBmUKoOF9_h9u_ULUFQHdYEbboV1dyL9TwVzy296wNfUEmRd3VcNej5CyC41Hye6HFQ1TNFk1eMe2Q')
@@ -33,6 +38,7 @@ def instruction_bot(event):
         if event.type == VkEventType.MESSAGE_NEW and event.from_user and not event.from_me:
             pattern_group = r'[а-яА-Я]{4}-\d{2}-\d{2}$' 
             pattern_bot_group = r'^бот\s+[а-яА-Я]{4}-\d{2}-\d{2}$' 
+            pattern_find = r"^найти [А-Яа-я]{3,12}$"
             if event.text.lower() == 'погода':
                 print('New from {}, text = {}'.format(event.user_id, event.text))
                 pogoda_bot(event)
@@ -72,28 +78,68 @@ def instruction_bot(event):
                 print('New from {}, text = {}'.format(event.user_id, event.text))
                 group = event.text.lower().split("бот ")[1]
                 bot_group_bot(event,group.upper())
+                vk.messages.send(
+                    user_id=event.user_id,
+                    random_id=get_random_id(),
+                    message= "Команды:\n\n"+
+                            "1) «Погода» - показывает погоду в Москве\n"+
+                            "2) «Номер группы» - сохранение группы, сохраняет номер твоей группы для дальнейшего использования\n"+
+                            "3) «Бот» - показывает расписание для сохраненой группы (перед этим потребуется ввести номер свой номер группы , если ты его этого не сохранял)\n"
+                            "4) «Бот + номер группы» - показывает расписание для заданной группе \n"
+                            "5) «Бот + день недели» - показывает расписание на день недели (четную и нечетную) для сохраненой группы (перед этим потребуется ввести номер свой номер группы , если ты его этого не сохранял)\n"
+                            "6) «Бот + день недели + группа» - показывает расписани на день недели(четную и нечетную) для заданной группы\n"
+                            "7) «Найти + Фамилия преподавателя» - показывает расписание заданного преподавателя \n",
+                    keyboard=keyboard.get_keyboard())
+            # *COMPLETE
+            elif event.text.lower().startswith('бот') and len(event.text.lower().split()) == 3:
+                day, group = event.text.lower().split()[1:]
+                if day in ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'] and re.match(r'\w{4}-\d{2}-\d{2}', group):
+                    print('New from {}, text = {}'.format(event.user_id, event.text))
+                    bot_day_of_the_week_group_bot(event,day,group.upper(),keyboard)
 
-            #+
+            # *COMPLETE
             elif 'бот' in event.text.lower().split():
                 day = [word for word in event.text.lower().split() if word in ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота']]
                 if day:    
                     print('New from {}, text = {}'.format(event.user_id, event.text))
                     bot_day_of_the_week_bot(event,day[0],keyboard)
-            #+
-            elif event.text.lower().startswith('бот') and len(event.text.lower().split()) == 3:
-                day, group = event.text.lower().split()[1:]
-                if day in ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'] and re.match(r'\w{4}-\d{2}-\d{2}', group):
-                    print('New from {}, text = {}'.format(event.user_id, event.text))
-                    bot_day_of_the_week_group_bot(event,day[0],group.upper(),keyboard)
-            #+ 
+
+            # *COMPLETE
             elif re.search(pattern_group, event.text.lower()):
                 print('New from {}, text = {}'.format(event.user_id, event.text))
-                #Todo: передача группы в функцию 
-                group_number_bot(event)
+                group = event.text.upper()
+                group_number_bot(event,group)
+                vk.messages.send(
+                    user_id=event.user_id,
+                    random_id=get_random_id(),
+                    message= "Команды:\n\n"+
+                            "1) «Погода» - показывает погоду в Москве\n"+
+                            "2) «Номер группы» - сохранение группы, сохраняет номер твоей группы для дальнейшего использования\n"+
+                            "3) «Бот» - показывает расписание для сохраненой группы (перед этим потребуется ввести номер свой номер группы , если ты его этого не сохранял)\n"
+                            "4) «Бот + номер группы» - показывает расписание для заданной группе \n"
+                            "5) «Бот + день недели» - показывает расписание на день недели (четную и нечетную) для сохраненой группы (перед этим потребуется ввести номер свой номер группы , если ты его этого не сохранял)\n"
+                            "6) «Бот + день недели + группа» - показывает расписани на день недели(четную и нечетную) для заданной группы\n"
+                            "7) «Найти + Фамилия преподавателя» - показывает расписание заданного преподавателя \n",
+                    keyboard=keyboard.get_keyboard())
             #+
-            elif event.text.lower() == 'найти + "Фамилия препода"': #TODO:сделать проверку на то что вводится Фамилия препода
+            elif re.match(pattern_find, event.text.lower()):
                 print('New from {}, text = {}'.format(event.user_id, event.text))
-                find_teacher_bot()
+                if event.text.lower().startswith("найти "):
+                    surname = event.text.lower()[len("найти "):].strip().capitalize()
+                print (surname)
+                find_teacher_bot(event,surname,keyboard)
+                vk.messages.send(
+                    user_id=event.user_id,
+                    random_id=get_random_id(),
+                    message= "Команды:\n\n"+
+                            "1) «Погода» - показывает погоду в Москве\n"+
+                            "2) «Номер группы» - сохранение группы, сохраняет номер твоей группы для дальнейшего использования\n"+
+                            "3) «Бот» - показывает расписание для сохраненой группы (перед этим потребуется ввести номер свой номер группы , если ты его этого не сохранял)\n"
+                            "4) «Бот + номер группы» - показывает расписание для заданной группе \n"
+                            "5) «Бот + день недели» - показывает расписание на день недели (четную и нечетную) для сохраненой группы (перед этим потребуется ввести номер свой номер группы , если ты его этого не сохранял)\n"
+                            "6) «Бот + день недели + группа» - показывает расписани на день недели(четную и нечетную) для заданной группы\n"
+                            "7) «Найти + Фамилия преподавателя» - показывает расписание заданного преподавателя \n",
+                    keyboard=keyboard.get_keyboard())
             #+
             else:
                 print('New from {}, text = {}'.format(event.user_id, event.text))
@@ -111,7 +157,150 @@ def instruction_bot(event):
                     keyboard=keyboard.get_keyboard()
                 )
 
+def find_teacher_bot(event,surname,keyboard):
+    list_with_teachers = parse_schedule(surname)
+    if list_with_teachers == None:
+        vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= "Такого преподавателя нету в файлах",
+            keyboard=keyboard.get_keyboard()
+            )
+        return
+    
+    if len(list_with_teachers) == 1:
+        show_keyboard_for_teacher(list_with_teachers[0], event)
+    else:
+        choose_teacher(event,list_with_teachers)
+    return
 
+def choose_teacher(event,list_with_teachers):
+    keyboard = VkKeyboard(one_time=True)
+    for teacher in list_with_teachers:
+        keyboard.add_button(teacher, color =VkKeyboardColor.PRIMARY)
+    vk.messages.send(
+        user_id=event.user_id,
+        random_id=get_random_id(),
+        message= "Выберите Преподавателя:",
+        keyboard=keyboard.get_keyboard()
+    )
+    for event in longpoll.listen():
+        if event.type == VkEventType.MESSAGE_NEW and event.from_user and not event.from_me:
+            if event.text in list_with_teachers:
+                show_keyboard_for_teacher(event.text,event)
+                return
+            else:
+                vk.messages.send(
+                    user_id=event.user_id,
+                    random_id=get_random_id(),
+                    message= "Выберите Преподавателя:",
+                    keyboard=keyboard.get_keyboard()
+                )
+
+
+def show_keyboard_for_teacher(teacher,event):
+    global vk
+    global longpoll
+    keyboard = VkKeyboard(one_time=True)
+    keyboard.add_button('На сегодня', color =VkKeyboardColor.POSITIVE)
+    keyboard.add_button('На завтра', color =VkKeyboardColor.NEGATIVE)
+    keyboard.add_line()
+    keyboard.add_button('На эту неделю', color =VkKeyboardColor.PRIMARY)
+    keyboard.add_button('На следующую неделю', color =VkKeyboardColor.PRIMARY)
+    keyboard.add_line()
+    keyboard.add_button('Назад', color =VkKeyboardColor.NEGATIVE)
+    cl_teacher = Teacher(teacher)
+    vk.messages.send(
+                    user_id=event.user_id,
+                    random_id=get_random_id(),
+                    message= '«Меню Расписание»',
+                    keyboard=keyboard.get_keyboard()
+                )
+    for event in longpoll.listen():
+        if event.type == VkEventType.MESSAGE_NEW and event.from_user and not event.from_me:
+            if event.text.lower() == 'на сегодня':
+                print('New from {}, text = {}'.format(event.user_id, event.text))
+                teacher_schedule_today(event,cl_teacher,keyboard)
+            elif event.text.lower() == 'на завтра':
+                print('New from {}, text = {}'.format(event.user_id, event.text))
+                teacher_schedule_tommorow(event,cl_teacher,keyboard)
+            elif event.text.lower() == 'на эту неделю':
+                print('New from {}, text = {}'.format(event.user_id, event.text))
+                teacher_schedule_this_week(event,cl_teacher,keyboard)
+            elif event.text.lower() == 'на следующую неделю':
+                print('New from {}, text = {}'.format(event.user_id, event.text))
+                teacher_schedule_next_week(event,cl_teacher,keyboard)
+            elif event.text.lower() == 'назад':
+                print('New from {}, text = {}'.format(event.user_id, event.text))
+                return
+            else:
+                print('New from {}, text = {}'.format(event.user_id, event.text))
+                vk.messages.send(
+                    user_id=event.user_id,
+                    random_id=get_random_id(),
+                    message= '«Неверная команда»',
+                    keyboard=keyboard.get_keyboard()
+                )
+    
+def teacher_schedule_today(event,cl_teacher,keyboard):
+    today = datetime.date.today()
+    cl_teacher.date = today.strftime("%d.%m.%Y")
+    string = cl_teacher.found_teacher()
+    vk.messages.send(
+        user_id=event.user_id,
+        random_id=get_random_id(),
+        message=string,
+        keyboard=keyboard.get_keyboard()
+    )
+    return
+
+def teacher_schedule_tommorow(event,cl_teacher,keyboard):
+    today = datetime.date.today()
+    tomorrow = today + datetime.timedelta(days=1)
+    cl_teacher.date = tomorrow.strftime("%d.%m.%Y")
+    string = cl_teacher.found_teacher()
+    vk.messages.send(
+        user_id=event.user_id,
+        random_id=get_random_id(),
+        message=string,
+        keyboard=keyboard.get_keyboard()
+    )
+    return
+
+def teacher_schedule_this_week(event,cl_teacher,keyboard):
+    today = datetime.date.today()
+    day_of_week = today.weekday()
+    start_date = today - datetime.timedelta(days=day_of_week)
+    week_dates = [start_date + datetime.timedelta(days=i) for i in range(6)]
+    string = ''
+    for date in week_dates:
+        cl_teacher.date = date.strftime("%d.%m.%Y")
+        string += f'{cl_teacher.found_teacher()}\n'
+    vk.messages.send(
+        user_id=event.user_id,
+        random_id=get_random_id(),
+        message=string,
+        keyboard=keyboard.get_keyboard()
+    )
+    return
+    
+def teacher_schedule_next_week(event,cl_teacher,keyboard):
+    today = datetime.date.today()
+    day_of_week = today.weekday()
+    start_date = today - datetime.timedelta(days=day_of_week)
+    next_week_start_date = start_date + datetime.timedelta(days=7)
+    next_week_dates = [next_week_start_date + datetime.timedelta(days=i) for i in range(6)]
+    string = ''
+    for date in next_week_dates:
+        cl_teacher.date = date.strftime("%d.%m.%Y")
+        string += f'{cl_teacher.found_teacher()}\n'
+    vk.messages.send(
+        user_id=event.user_id,
+        random_id=get_random_id(),
+        message=string,
+        keyboard=keyboard.get_keyboard()
+    )
+    return
 
 def pogoda_bot(event):
     global vk
@@ -132,25 +321,141 @@ def pogoda_bot(event):
                 )
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.from_user and not event.from_me:
-            #TODO:сделать кнопочки
             if event.text.lower() == 'сейчас':
                 print('New from {}, text = {}'.format(event.user_id, event.text))
+                get_weather_now(event,keyboard)
                 pass
-            if event.text.lower() == 'сегодня':
+            elif event.text.lower() == 'сегодня':
                 print('New from {}, text = {}'.format(event.user_id, event.text))
-                pass
-            if event.text.lower() == 'завтра':
+                get_weather_segodnya(event,keyboard)
+
+            elif event.text.lower() == 'завтра':
                 print('New from {}, text = {}'.format(event.user_id, event.text))
-                pass
-            if event.text.lower() == 'на 5 дней':
+                get_weather_zavtra(event,keyboard)
+
+            elif event.text.lower() == 'на 5 дней':
                 print('New from {}, text = {}'.format(event.user_id, event.text))
-                pass
-            if event.text.lower() == 'назад':
+                get_weather_five_days(event,keyboard)
+
+            elif event.text.lower() == 'назад':
                 print('New from {}, text = {}'.format(event.user_id, event.text))
                 return
+            
             else:
                 print('New from {}, text = {}'.format(event.user_id, event.text))
-                pass
+                vk.messages.send(
+                    user_id=event.user_id,
+                    random_id=get_random_id(),
+                    message= '«Неизвестная команда»',
+                    keyboard=keyboard.get_keyboard()
+                )
+
+
+def get_weather_now(event,keyboard):
+    weather_string, path_icons = get_weather()
+    icons = mergepng(path_icons)
+    photo_id = upload_on_server_vk(icons)
+    vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= f'Погода в Москве\n',
+            attachment= photo_id
+            )
+    vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= f'\n{weather_string}',
+            keyboard=keyboard.get_keyboard()
+            )
+
+def get_weather_segodnya(event,keyboard):
+    weather_string, path_icons = get_weather_today()
+    icons = mergepng(path_icons)
+    photo_id = upload_on_server_vk(icons)
+    vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= f'Погода в Москве\n',
+            attachment= photo_id
+            )
+    vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= f'\n{weather_string}',
+            keyboard=keyboard.get_keyboard()
+            )
+    
+def get_weather_zavtra(event,keyboard):
+    weather_string, path_icons = get_weather_tommorow()
+    icons = mergepng(path_icons)
+    photo_id = upload_on_server_vk(icons)
+    vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= f'Погода в Москве\n',
+            attachment= photo_id
+            )
+    vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= f'\n{weather_string}',
+            keyboard=keyboard.get_keyboard()
+            )
+
+def get_weather_five_days(event,keyboard):
+    weather_string, path_icons = get_weather_five_day()
+    icons = mergepng(path_icons)
+    photo_id = upload_on_server_vk(icons)
+    start_date = datetime.date.today().strftime('%d.%m')
+    end_date = (datetime.date.today() + timedelta(days=5)).strftime('%d.%m')
+
+    weather = f"Погода в Москве с {start_date} по {end_date}"
+    vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= weather,
+            attachment= photo_id
+            )
+    vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message= f'\n{weather_string}',
+            keyboard=keyboard.get_keyboard()
+            )
+
+def upload_on_server_vk(path):
+    upload = VkUpload(vk_session)
+    photo = upload.photo_messages(path)
+    photo_id = f'photo{photo[0]["owner_id"]}_{photo[0]["id"]}'
+    return photo_id
+
+def mergepng(image_paths):
+    # Создание пустого холста для объединения картинок
+    canvas_width = 0
+    canvas_height = 0
+    images = []
+    for path in image_paths:
+        image = Image.open(path)
+        images.append(image)
+        canvas_width += image.width  # изменение ширины холста
+        canvas_height = max(canvas_height, image.height)
+
+    canvas = Image.new('RGBA', (canvas_width, canvas_height), (0, 0, 0, 0))
+
+    # Объединение картинок на холсте
+    x_offset = 0  # новый счетчик
+    y_offset = 0
+    for image in images:
+        canvas.paste(image, (x_offset, y_offset))
+        x_offset += image.width  # увеличение счетчика по горизонтали
+        if x_offset >= canvas_width:  # перенос на новую строку
+            x_offset = 0
+            y_offset += image.height
+
+    path_png = "II\Oznokom praktika\BlockF\many_png_in_one\manypngs.png"
+    # Сохранение объединенной картинки
+    canvas.save(path_png)
+    return path_png
 
 def bot_bot(event):
     if student_in_json("II\Oznokom praktika\BlockF\SerealizeData\data.json",event.user_id):
@@ -383,6 +688,12 @@ def bot_day_of_the_week_bot(event,day,keyboard):
     else:
         save = save_group(event)
         if save == 0:
+            vk.messages.send(
+                        user_id=event.user_id,
+                        random_id=get_random_id(),
+                        message= "«Меню выбора»",
+                        keyboard=keyboard.get_keyboard()
+                    )
             return
         show_day_of_week_schedule(event,day,keyboard)
         return 
@@ -396,13 +707,6 @@ def show_day_of_week_schedule(event,day,keyboard):
         message=string,
         keyboard=keyboard.get_keyboard()
     )
-    #получить дату по дню недели
-    #получить четность нашей недели:
-
-    #если четная
-        #вывести расписание на этот день + расписание через 7 дней
-    #если не четная
-        #вывести расписание 7 дней назад + расписание на этот день
 
 
 
@@ -418,45 +722,49 @@ def bot_day_of_the_week_group_bot(event,day,group,keyboard):
 
 
 
-def group_number_bot(event):
-    save_group(event)
+def group_number_bot(event,group):
+    save = save_group_2(event,group)
+    if save == 0:
+        return
+
+def save_group_2(event,group):
+    valid = valid_group_2(event,group)
+    if valid == 0:
+        return 0
+    else:
+        group = Raspisanie(valid, event.user_id)
+        delete_from_json_user_id(event)
+        with open("II\Oznokom praktika\BlockF\SerealizeData\data.json","w") as f:
+            json.dump(group.to_json(), f)
+        return
+    
+def delete_from_json_user_id(event):
+    with open("II\Oznokom praktika\BlockF\SerealizeData\data.json","r") as f:
+        data = json.load(f)
+    for obj in list(data):
+        if 'user_id' in obj and obj['user_id'] == event.user_id:
+            data.remove(obj)
+    with open("II\Oznokom praktika\BlockF\SerealizeData\data.json","w") as f:
+        json.dump(data,f)
+
+def valid_group_2(event,group):
+    if re.match(r'^[А-Я]{4}-\d{2}-\d{2}$', group):
+        vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message=f'Я запомнил, что ты из группы {group}',
+        )
+        return event.text.upper() 
+    else:
+        vk.messages.send(
+            user_id=event.user_id,
+            random_id=get_random_id(),
+            message='Группа введена неверно, введите группу в формате "АААА-00-00"\n'
+        )
+        return 0
 
 
-
-def find_teacher_bot():
-    #Парсим документ и ищем перпода
-        #Если преподов несколько
-            #Выбор препода по клавиатуре
-                #вывести клавиатуру с расписанием
-                    #на сегодня
-                    #на завтра 
-                    #на эту неделю
-                    #на следующую неделю
-
-        #Если препод один
-            #вывести клавиатуру с расписанием
-                #на сегодня
-                #на завтра 
-                #на эту неделю
-                #на следующую неделю
-        #Если препода нет
-            #вывод что он ботик , его уволили
-    pass
-
-
-
-
-    #TODO: Попросить указать номер группы.
-        #TODO: После этого показать след кнопки
-            # "Какая неделя?"
-            # "Какая группа?"
-            # "Показать расписание"
-                # TODO: 
-                # Сегодня
-                # Завтра
-                # Неделя
-                # Next_неделя
-
+ 
 def main():
     global vk
     global longpoll
@@ -470,7 +778,3 @@ def main():
 if __name__ ==  '__main__':
     main()
 
-
-#TODO:проработать варианты когда группу не находит
-#TODO:проработаь на неделю , на след неделю, долго выполняется
-#TODO сделать изменение группы
