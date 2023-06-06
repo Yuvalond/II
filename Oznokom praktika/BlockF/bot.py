@@ -499,7 +499,7 @@ def data_for_parsing_schedule(event):
         if isinstance(data, dict):
             data = [data]
         for i in data:
-            if i['id_user'] == 277267389:
+            if i['id_user'] == event.user_id:
                 group = i['group']
 
         data = Raspisanie(group, event.user_id)
