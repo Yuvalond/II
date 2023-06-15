@@ -5,7 +5,6 @@ import requests
 import openpyxl
 import os
 import re
-import json
 from bs4 import BeautifulSoup
 
 class Raspisanie():

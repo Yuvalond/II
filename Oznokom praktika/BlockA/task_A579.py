@@ -61,7 +61,7 @@ while 1:
 "5 - удалении приложения по номеру.",sep ="\n")
     k = input()
     if k == "0":
-        break 1
+        break
     exec('action'+k+"(apps)")
 
 action1(apps)

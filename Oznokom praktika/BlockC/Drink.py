@@ -50,18 +50,3 @@ class Drink(Item): #производный класс от item
         self.ingredients = ingredients #состав напитка
         self.log_event("INF", f"Изменены параметры объекта |{self.name}| класса Drink")
 
-    # def __getstate__(self) -> dict:  # Как мы будем "сохранять" класс
-    #     state = {}
-    #     state["name"] = self.name
-    #     state["price"] = self.price
-    #     state["volume"] = self.volume
-    #     state["menu_category"] =  self.menu_category
-    #     state["ingredients"] = self.ingredients
-    #     return state
-    
-    # def __setstate__(self, state: dict):  # Как мы будем восстанавливать класс из байтов
-    #     self.name = state["name"]
-    #     self.price = state["price"]
-    #     self.volume = state["volume"]
-    #     self.menu_category= state["menu_category"]
-    #     self.ingredients = state["ingredients"]

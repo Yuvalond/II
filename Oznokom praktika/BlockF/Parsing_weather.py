@@ -291,19 +291,6 @@ def get_weather_tommorow():
 
     return weather_forecast, weather_icons
 
-
-# forecast, icons = get_weather_today() #работает!
-# print(forecast)
-# print(icons)
-
-# forecast, icons = get_weather_forecast_tommorow() #работает
-# print(forecast)
-# print(icons)
-
-# string_1,icon_1 = get_weather()
-# print(string_1)
-# print(icon_1)
-
 def get_weather_five_day():
     url = "http://api.openweathermap.org/data/2.5/forecast?q=Moscow,ru&appid=" + "3c0d9f3715a8bf127d531ae50e173816" + "&units=metric&lang=ru"
     response = requests.get(url)
@@ -357,23 +344,3 @@ def get_weather_five_day():
     weather_forecast += "/".join([f"{temperature} C" for temperature in temperatures_night]) + " НОЧЬ"
 
     return weather_forecast, icon_paths
-
-
-# weather_1 , icons_1 = get_weather()
-# print (weather_1)
-# print (icons_1)
-# print("\n\n\n")
-
-# weather_2 , icons_2 = get_weather_today()
-# print (weather_2)
-# print (icons_2)
-# print("\n\n\n")
-
-# weather_3 , icons_3 = get_weather_tommorow()
-# print (weather_3)
-# print (icons_3)
-# print("\n\n\n")
-
-# weather_4 , icons_4 = get_weather_five_day()
-# print (weather_4)
-# print (icons_4)

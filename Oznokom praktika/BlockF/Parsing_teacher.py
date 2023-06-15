@@ -1,10 +1,6 @@
 import datetime 
 import locale
 import openpyxl
-import os
-import re
-
-
 
 #!ДАТА ПЕРЕДЕАТСЯ ЗА КЛАССОМ , хранится как string в виде '%d.%m.%Y'
 
@@ -162,9 +158,4 @@ def parse_schedule(surname_prepod):
         return list(set(all_teachers))
     else:
         return None
-
-
-# teach = Teacher("Мирзоян Д.И.")
-# teach.date = "06.06.2023"
-# teach.found_teacher()
                     

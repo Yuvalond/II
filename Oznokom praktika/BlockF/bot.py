@@ -1,4 +1,5 @@
 import vk_api
+import json
 from Parsing_raspisania import *
 from Parsing_weather import *
 from Parsing_teacher import *
