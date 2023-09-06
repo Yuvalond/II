@@ -1,4 +1,4 @@
-package ru.mirea.labs.lab1.ball;
+package ru.mirea.ikbo2822.ulyanov.lab1.ball;
 
 public class BallTest {
     public static void main(String[] args) {
@@ -17,8 +17,8 @@ public class BallTest {
 
         ball3.bounce();
 
-        System.out.println(ball1.toString()); // "Ball color: Red, radius: 5.0]"
-        System.out.println(ball2.toString()); // "Ball color: Yellow, radius: 6.0"
-        System.out.println(ball3.toString()); // "Ball color: Green, radius: 4.0"
+        System.out.println(ball1); // "Ball color: Red, radius: 5.0"
+        System.out.println(ball2); // "Ball color: Yellow, radius: 6.0"
+        System.out.println(ball3); // "Ball color: Green, radius: 4.0"
     }
 }

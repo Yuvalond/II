@@ -1,4 +1,4 @@
-package ru.mirea.labs.lab1.dog;
+package ru.mirea.ikbo2822.ulyanov.lab1.dog;
 
 public class Dog {
     private String name;

@@ -1,4 +1,4 @@
-package ru.mirea.labs.lab1.ball;
+package ru.mirea.ikbo2822.ulyanov.lab1.ball;
 
 public class Ball {
     private String color;

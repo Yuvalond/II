@@ -1,4 +1,4 @@
-package ru.mirea.labs.lab1.book;
+package ru.mirea.ikbo2822.ulyanov.lab1.book;
 
 public class BookTest {
     public static void main(String[] args) {
@@ -18,8 +18,8 @@ public class BookTest {
         System.out.println("Book author: " + book2.getAuthor()); // "George Orwell"
         System.out.println("Book pageCount: " + book2.getPageCount()); // 342
 
-        System.out.println(book1.toString()); // Book title: To Kill a Mockingbird, author: Harper Lee, pageCount: 281"
-        System.out.println(book2.toString()); // Book title: Nineteen Eighty-Four, author: George Orwell, pageCount: 342"
-        System.out.println(book3.toString()); // Book title: A Study in Scarlet, author: Arthur Conan Doyle, pageCount: 116"
+        System.out.println(book1); // Book title: To Kill a Mockingbird, author: Harper Lee, pageCount: 281"
+        System.out.println(book2); // Book title: Nineteen Eighty-Four, author: George Orwell, pageCount: 342"
+        System.out.println(book3); // Book title: A Study in Scarlet, author: Arthur Conan Doyle, pageCount: 116"
     }
 }

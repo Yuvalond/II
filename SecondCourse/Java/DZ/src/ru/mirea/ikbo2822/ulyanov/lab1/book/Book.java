@@ -1,4 +1,4 @@
-package ru.mirea.labs.lab1.book;
+package ru.mirea.ikbo2822.ulyanov.lab1.book;
 
 public class Book {
     private String title;
